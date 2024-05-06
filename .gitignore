@@ -1,0 +1,20 @@
+# Dependencies
+/node_modules
+
+# Environment Variables
+.env
+
+# Logs
+logs
+*.log
+
+# Compiled Output
+dist
+
+# Temp Files
+temp
+
+# Coverage Directory
+coverage
+
+.vscode
