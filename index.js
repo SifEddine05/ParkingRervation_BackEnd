@@ -32,4 +32,6 @@ if (process.env.NODE_ENV !== "test") {
 
   /*User(fullName , email ,password , Phone , Address)
 Address(longitude,lattude,wilaya,commune)
-Parking(photo,nom,Address,)*/
+Parking(photo,nom,Address,Commune,Wilaya,longitude,latitude , Description)
+
+*/
