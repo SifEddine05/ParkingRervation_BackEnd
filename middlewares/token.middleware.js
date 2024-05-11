@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const prisma = require("../models/prismaClient");
+const prisma = require("../models/prisma.client");
 const { JWT_SECRET, exclude } = require("../configs");
 const { StatusCodes } = require("http-status-codes");
 
@@ -13,57 +13,18 @@ const authenticateToken = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     let user;
-    if (decoded.role === "tasker") {
-      user = await prisma.tasker.findUnique({
-        where: {
-          userId: decoded.userID,
-        },
-        include: {
-          User: true,
-          Task: {
-            select: {
-              _count: true,
-            },
-          },
-        },
-      });
-      user.role = "tasker";
-    } else if (decoded.role === "client") {
-      user = await prisma.client.findUnique({
-        where: {
-          id: decoded.userID,
-        },
-        include: {
-          User: true,
-        }
-      });
-      user.role = "client";
-    } else if (decoded.role === "user") {
-      user = await prisma.user.findUnique({
-        where: {
-          id: decoded.userID,
-        },
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-        },
-      });
-      user.role = "user";
-    }
-    else if (decoded.role === "admin") {
-      user = await prisma.admin.findUnique({
-        where: {
-          id: decoded.adminID,
-        },
-        select: {
-          id: true,
-          email: true,
-        },
-      });
-      user.role = "admin";
-    }
+    user = await prisma.user.findUnique({
+      where: {
+        id: decoded.userID,
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        phone: true,
+        address : true
+      },
+    })
 
     if (!user) {
       return res

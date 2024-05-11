@@ -1,18 +1,77 @@
-
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  fullName  String
-  email     String   @unique
-  password  String
-  phone     String
-  address   String
+  id            Int           @id @default(autoincrement())
+  fullName      String
+  email         String        @unique
+  password      String
+  phone         String
+  address       String
+  reservations  Reservation[]
+
+}
+
+model Address {
+  id         Int      @id @default(autoincrement())
+  longitude  Float
+  latitude   Float
+  wilaya     String
+  commune    String
+  street     String 
+  parkings   Parking[]
+}
+
+model Parking {
+  id                  Int          @id @default(autoincrement())
+  photo               String
+  nom                 String
+  address             Address      @relation(fields: [addressId], references: [id])
+  addressId           Int
+  description         String
+  nbrTotalPlaces      Int
+  nbrDisponiblePlaces Int
+  places              Place[]
+}
+
+model Reservation {
+  id                        Int      @id @default(autoincrement())
+  reservationRandomId       String
+  dateAndTimeReservation    DateTime
+  nbrHours                  Int
+  totalPrice                Float
+  user                      User     @relation(fields: [userId], references: [id])
+  userId                    Int
+  place                     Place    @relation(fields: [placeId], references: [id])
+  placeId                   Int
+  dateAndTimeDebut         DateTime
+  position                  String
+  qRcode                    String
+  status                    String
+}
+
+model Notification {
+  id                      Int      @id @default(autoincrement())
+  seen                    Boolean
+  dateAndTimeNotification DateTime
+  title                   String
+  description             String
+}
+
+model Place {
+  id            Int       @id @default(autoincrement())
+  parking       Parking   @relation(fields: [parkingId], references: [id])
+  parkingId     Int
+  floor         Int
+  isCovered     Boolean
+  pricePerHour  Float
+  isReserved    Boolean
+  reservations  Reservation[]
+
 }

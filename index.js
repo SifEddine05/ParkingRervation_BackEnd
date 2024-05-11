@@ -5,6 +5,8 @@ const cors = require("cors");
 // const prisma = require("./models/prisma.client");
 const {PORT } = require("./configs/index");
 const authRouter = require("./routes/auth.route");
+const parkingRouter = require("./routes/parking.route");
+const reservationRouter = require("./routes/reservation.route");
 
 
 
@@ -20,7 +22,8 @@ app.use(
 
 
 app.use("/api/auth", authRouter);
-
+app.use("/api/parkings/",parkingRouter)
+app.use("/api/reservation/",reservationRouter)
 
 
 if (process.env.NODE_ENV !== "test") {
@@ -30,8 +33,16 @@ if (process.env.NODE_ENV !== "test") {
   }
 
 
-  /*User(fullName , email ,password , Phone , Address)
+/*
+User(fullName , email ,password , Phone , Address)
 Address(longitude,lattude,wilaya,commune)
-Parking(photo,nom,Address,Commune,Wilaya,longitude,latitude , Description)
-
+Parking(photo,nom,Address_id , Description,PriceParHour,Nbr_total_Place,Nbr_Disponible_Places)
+Reservation(reservationRandomId , dateAndTimeReservation,nbrHours,totalPrice,UserId,ParkingId,Date_debut,Time_debut,Position,QRcode,status,Place) the possible status to (active,finished,expired,cancled)
+Notification(seen,DateandTimeNotification,Title,desciprion)
 */
+
+
+// Get All Parkings , get most visited parkings , get parking by id , get nearest parkings ,
+//get Disponible Places ,get All Reservation , get Active Reservation , get failed reservation ,get reservation by id 
+//get Notification filtred by Day 
+//create reservation , 
