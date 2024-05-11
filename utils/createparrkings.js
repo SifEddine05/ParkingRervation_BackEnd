@@ -14,7 +14,6 @@ async function createParking() {
       nbrDisponiblePlaces: 50 
     };
 
-    // Create new parking
     const newParking = await prisma.parking.create({
       data: newParkingData
     });
