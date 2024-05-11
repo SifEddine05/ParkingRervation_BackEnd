@@ -2,6 +2,8 @@ const express = require("express");
 require("dotenv").config();
 const app = express();
 const cors = require("cors");
+const path = require("path"); // Import the path module
+
 // const prisma = require("./models/prisma.client");
 const {PORT } = require("./configs/index");
 const authRouter = require("./routes/auth.route");
@@ -19,6 +21,7 @@ app.use(
     extended: true,
   })
 );
+app.use('/uploads/qrcodes', express.static(path.join(__dirname, 'uploads/qrcodes')));
 
 
 app.use("/api/auth", authRouter);
