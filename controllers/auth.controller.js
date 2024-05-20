@@ -88,8 +88,8 @@ const register = async (req, res, next) => {
       user: {
         email: user.email,
         id: user.id,
-        token,
       },
+      token: token,
     });
   } catch (error) {
     next(error);
