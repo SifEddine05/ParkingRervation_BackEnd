@@ -96,6 +96,20 @@ const register = async (req, res, next) => {
   }
 };
 
+function getCurrentUser(req, res, next) {
+  try {
+      // Check if user object is attached to request
+      const user = req.user;
+
+      if (!user) {
+          return res.status(StatusCodes.UNAUTHORIZED).json({ error: "User not authenticated" });
+      }
+
+      res.status(StatusCodes.OK).json(user);
+  } catch (error) {
+      next(error);
+  }
+}
 
 
 
@@ -104,5 +118,6 @@ module.exports = {
   login,
   register,
   hashPassword,
-  comparePassword
+  comparePassword,
+  getCurrentUser
 };
