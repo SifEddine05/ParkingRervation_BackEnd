@@ -9,27 +9,18 @@ async function createReservation(req, res, next) {
         const { parkingId, nbrHours, dateAndTimeDebut } = req.body;
         const userId = req.user.id;
 
-        const availablePlace = await prisma.place.findFirst({
+        const parking = await prisma.parking.findUnique({
             where: {
-                parkingId: parkingId,
-                isReserved: false // Check if the place is not reserved
+                id: parkingId,
             }
         });
 
-        if (!availablePlace) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ error: ReasonPhrases.BAD_REQUEST, message: "No available places in the specified parking" });
+        if (!parking) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ error:  "No Parking with  this ID" });
         }
-
-        // Mark the place as reserved
-        await prisma.place.update({
-            where: { id: availablePlace.id },
-            data: { isReserved: true }
-        });
-
         
-
         // Calculate total price (assuming pricePerHour is available in the place)
-        const totalPrice = nbrHours * availablePlace.pricePerHour;
+        const totalPrice = nbrHours * parking.pricePerHour;
 
         const reservationId = uuidv4();
         const qrCode = await qr.toDataURL(reservationId);
@@ -39,35 +30,30 @@ async function createReservation(req, res, next) {
 
         // Save the QR code image to a file
         await fs.promises.writeFile(qrCodeImagePath, qrCode.split(';base64,').pop(), { encoding: 'base64' });
+        function generateRandomPosition() {
+            const letters = "ABCDEF";
+            const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+            const randomNumber = Math.floor(Math.random() * 9) + 1;
+            return `${randomLetter}-${randomNumber}`;
+          }
         // Create the reservation
         const reservation = await prisma.reservation.create({
             data: {
                 reservationRandomId: reservationId,
                 userId: userId,
-                placeId: availablePlace.id,
+                parkingId: parking.id,
                 dateAndTimeReservation: new Date(),
                 nbrHours: nbrHours,
                 totalPrice: totalPrice,
                 dateAndTimeDebut: new Date(dateAndTimeDebut),
-                position: "", // assuming it's empty for now
-                qRcode: qrCodeImageUrl, // Assign the generated QR code
+                position: generateRandomPosition(), 
+                qRcode: qrCodeImageUrl, 
                 status: "active"
             }
         });
-
-        // Decrease the number of available places in the parking
-        await prisma.parking.update({
-          where: { id: parkingId },
-          data: {
-              nbrDisponiblePlaces: {
-                  decrement: 1
-              }
-          }
-      });
-
         res.status(StatusCodes.CREATED).json(reservation);
     } catch (error) {
-        next(error);
+        res.status(500).json("Server Error");
     }
 }
 

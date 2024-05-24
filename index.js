@@ -47,5 +47,6 @@ Notification(seen,DateandTimeNotification,Title,desciprion)
 
 // Get All Parkings , get most visited parkings , get parking by id , get nearest parkings ,
 //get Disponible Places ,get All Reservation , get Active Reservation , get failed reservation ,get reservation by id 
-//get Notification filtred by Day 
+//get Notification filtred by Day , create Notification when verify qrcode 
+// create notification to notify user 1 hour before the reservation 
 //create reservation , 

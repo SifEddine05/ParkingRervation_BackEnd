@@ -7,6 +7,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum ReservationStatus {
+  active
+  finished
+  expired
+  canceled
+}
+
 model User {
   id            Int           @id @default(autoincrement())
   fullName      String
@@ -36,8 +43,9 @@ model Parking {
   addressId           Int
   description         String
   nbrTotalPlaces      Int
-  nbrDisponiblePlaces Int
-  places              Place[]
+  pricePerHour  Float
+  reservations  Reservation[]
+
 }
 
 model Reservation {
@@ -48,12 +56,12 @@ model Reservation {
   totalPrice                Float
   user                      User     @relation(fields: [userId], references: [id])
   userId                    Int
-  place                     Place    @relation(fields: [placeId], references: [id])
-  placeId                   Int
+  parking                   Parking    @relation(fields: [parkingId], references: [id])
+  parkingId                   Int
   dateAndTimeDebut         DateTime
   position                  String
   qRcode                    String
-  status                    String
+  status                    ReservationStatus
 }
 
 model Notification {
@@ -64,14 +72,4 @@ model Notification {
   description             String
 }
 
-model Place {
-  id            Int       @id @default(autoincrement())
-  parking       Parking   @relation(fields: [parkingId], references: [id])
-  parkingId     Int
-  floor         Int
-  isCovered     Boolean
-  pricePerHour  Float
-  isReserved    Boolean
-  reservations  Reservation[]
 
-}
