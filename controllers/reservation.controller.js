@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const qr = require('qrcode'); // Import the qrcode library
 const fs = require('fs');
 const path = require('path');
+
 async function createReservation(req, res, next) {
     try {
         const { parkingId, nbrHours, dateAndTimeDebut } = req.body;
@@ -16,9 +17,40 @@ async function createReservation(req, res, next) {
         });
 
         if (!parking) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ error:  "No Parking with  this ID" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ error: "No Parking with this ID" });
         }
-        
+
+        // Calculate the end time of the requested reservation
+        const requestedEndTime = new Date(dateAndTimeDebut);
+        requestedEndTime.setHours(requestedEndTime.getHours() + nbrHours);
+
+        // Fetch all active reservations for the parking lot
+        const activeReservations = await prisma.reservation.findMany({
+            where: {
+                parkingId: parkingId,
+                status: "active",
+            }
+        });
+
+        // Check if the number of active reservations at the requested time is less than the total number of places
+        let overlappingReservationsCount = 0;
+        for (const reservation of activeReservations) {
+            const reservationEndTime = new Date(reservation.dateAndTimeDebut);
+            reservationEndTime.setHours(reservationEndTime.getHours() + reservation.nbrHours);
+
+            // Check if the requested time overlaps with existing reservations
+            if (
+                (new Date(dateAndTimeDebut) < reservationEndTime) &&
+                (requestedEndTime > new Date(reservation.dateAndTimeDebut))
+            ) {
+                overlappingReservationsCount++;
+            }
+        }
+
+        if (overlappingReservationsCount >= parking.nbrTotalPlaces) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ error: "No place available" });
+        }
+
         // Calculate total price (assuming pricePerHour is available in the place)
         const totalPrice = nbrHours * parking.pricePerHour;
 
@@ -30,12 +62,14 @@ async function createReservation(req, res, next) {
 
         // Save the QR code image to a file
         await fs.promises.writeFile(qrCodeImagePath, qrCode.split(';base64,').pop(), { encoding: 'base64' });
+
         function generateRandomPosition() {
             const letters = "ABCDEF";
             const randomLetter = letters[Math.floor(Math.random() * letters.length)];
             const randomNumber = Math.floor(Math.random() * 9) + 1;
             return `${randomLetter}-${randomNumber}`;
-          }
+        }
+
         // Create the reservation
         const reservation = await prisma.reservation.create({
             data: {
@@ -46,17 +80,67 @@ async function createReservation(req, res, next) {
                 nbrHours: nbrHours,
                 totalPrice: totalPrice,
                 dateAndTimeDebut: new Date(dateAndTimeDebut),
-                position: generateRandomPosition(), 
-                qRcode: qrCodeImageUrl, 
+                position: generateRandomPosition(),
+                qRcode: qrCodeImageUrl,
                 status: "active"
             }
         });
+
         res.status(StatusCodes.CREATED).json(reservation);
     } catch (error) {
         res.status(500).json("Server Error");
     }
 }
 
+
+
+
+
+async function getMyActiveReservations(req, res, next) {
+    try {
+        const userId = req.user.id;
+        const currentDateTime = new Date();
+
+        // Fetch active reservations for the user
+        let activeReservations = await prisma.reservation.findMany({
+            where: {
+                userId: userId,
+                status: "active",
+            },
+        });
+
+        // Update status for expired reservations
+        const updatedReservations = await Promise.all(activeReservations.map(async (reservation) => {
+            const reservationEndDateTime = new Date(reservation.dateAndTimeDebut);
+            reservationEndDateTime.setHours(reservationEndDateTime.getHours() + reservation.nbrHours);
+
+            if (reservationEndDateTime < currentDateTime) {
+                // Update the reservation status to expired
+                await prisma.reservation.update({
+                    where: {
+                        id: reservation.id,
+                    },
+                    data: {
+                        status: "expired",
+                    },
+                });
+
+                return null; // Exclude expired reservation from the result
+            }
+
+            return reservation;
+        }));
+
+        // Filter out null values (expired reservations)
+        activeReservations = updatedReservations.filter(reservation => reservation !== null);
+
+        res.status(StatusCodes.OK).json(activeReservations);
+    } catch (error) {
+        res.status(500).json("Server Error");
+    }
+}
+
 module.exports = {
-    createReservation
+    createReservation,
+    getMyActiveReservations
 }
