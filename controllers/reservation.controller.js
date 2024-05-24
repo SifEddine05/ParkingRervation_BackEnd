@@ -140,7 +140,61 @@ async function getMyActiveReservations(req, res, next) {
     }
 }
 
+
+async function getMyExpiredReservations(req, res, next) {
+    try {
+        const userId = req.user.id;
+        const currentDateTime = new Date();
+
+        // Fetch active reservations for the user
+        const activeReservations = await prisma.reservation.findMany({
+            where: {
+                userId: userId,
+                status: "active",
+            },
+        });
+
+        // Update status for expired active reservations
+        const updatedReservations = await Promise.all(activeReservations.map(async (reservation) => {
+            const reservationEndTime = new Date(reservation.dateAndTimeDebut);
+            reservationEndTime.setHours(reservationEndTime.getHours() + reservation.nbrHours);
+
+            if (reservationEndTime < currentDateTime) {
+                // Update the reservation status to expired
+                await prisma.reservation.update({
+                    where: {
+                        id: reservation.id,
+                    },
+                    data: {
+                        status: "expired",
+                    },
+                });
+
+                return reservation; // Include expired reservation in the result
+            }
+
+            return null; // Exclude non-expired reservation from the result
+        }));
+
+        // Fetch all expired reservations for the user
+        const expiredReservations = await prisma.reservation.findMany({
+            where: {
+                userId: userId,
+                status: "expired",
+            },
+        });
+
+        // Combine newly expired reservations with already expired ones
+
+        res.status(StatusCodes.OK).json(expiredReservations);
+    } catch (error) {
+        res.status(500).json("Server Error");
+    }
+}
+
+
 module.exports = {
     createReservation,
-    getMyActiveReservations
+    getMyActiveReservations,
+    getMyExpiredReservations
 }
