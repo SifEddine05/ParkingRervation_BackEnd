@@ -1,5 +1,4 @@
 const express = require("express");
-const { getAllprkings } = require("../controllers/parkings.controller");
 const {  createReservation,  getMyActiveReservations, getMyExpiredReservations, getMyFinishedReservations, getMyCanceledReservations, getReservationById, cancelReservation } = require("../controllers/reservation.controller");
 const { reservationRules, reservationValidator } = require("../middlewares/validators/reservation.validator");
 const authenticateToken = require("../middlewares/token.middleware");
