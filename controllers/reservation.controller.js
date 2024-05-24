@@ -193,8 +193,50 @@ async function getMyExpiredReservations(req, res, next) {
 }
 
 
+async function getMyFinishedReservations(req, res, next) {
+    try {
+        const userId = req.user.id;
+
+        // Fetch all finished reservations for the logged-in user
+        const finishedReservations = await prisma.reservation.findMany({
+            where: {
+                userId: userId,
+                status: "finished",
+            },
+        });
+
+        res.status(StatusCodes.OK).json(finishedReservations);
+    } catch (error) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Server Error" });
+    }
+}
+
+
+async function getMyCanceledReservations(req, res, next) {
+    try {
+        const userId = req.user.id;
+
+        // Fetch all canceled reservations for the logged-in user
+        const canceledReservations = await prisma.reservation.findMany({
+            where: {
+                userId: userId,
+                status: "canceled",
+            },
+        });
+
+        res.status(StatusCodes.OK).json(canceledReservations);
+    } catch (error) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Server Error" });
+    }
+}
+
+
+
 module.exports = {
     createReservation,
     getMyActiveReservations,
-    getMyExpiredReservations
+    getMyExpiredReservations,
+    getMyFinishedReservations,
+    getMyCanceledReservations
+    
 }
