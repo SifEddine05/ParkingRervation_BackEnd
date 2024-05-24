@@ -231,12 +231,76 @@ async function getMyCanceledReservations(req, res, next) {
 }
 
 
+async function getReservationById(req, res, next) {
+    try {
+        const { reservationId } = req.params;
+
+        // Fetch the reservation by ID
+        const reservation = await prisma.reservation.findUnique({
+            where: {
+                id: parseInt(reservationId, 10),
+            },
+        });
+
+        if (!reservation) {
+            return res.status(StatusCodes.NOT_FOUND).json({ error: "Reservation not found" });
+        }
+
+        res.status(StatusCodes.OK).json(reservation);
+    } catch (error) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Server Error" });
+    }
+}
+
+
+async function cancelReservation(req, res, next) {
+    try {
+        const { reservationId } = req.params;
+        const userId = req.user.id; // Assuming the user is authenticated and user ID is available
+
+        // Fetch the reservation to check if it belongs to the user and is active
+        const reservation = await prisma.reservation.findUnique({
+            where: {
+                id: parseInt(reservationId, 10),
+            },
+        });
+
+        if (!reservation) {
+            return res.status(StatusCodes.NOT_FOUND).json({ error: "Reservation not found" });
+        }
+
+        if (reservation.userId !== userId) {
+            return res.status(StatusCodes.FORBIDDEN).json({ error: "You are not authorized to cancel this reservation" });
+        }
+
+        if (reservation.status !== "active") {
+            return res.status(StatusCodes.BAD_REQUEST).json({ error: "Only active reservations can be canceled" });
+        }
+
+        // Update the reservation status to canceled
+        const canceledReservation = await prisma.reservation.update({
+            where: {
+                id: parseInt(reservationId, 10),
+            },
+            data: {
+                status: "canceled",
+            },
+        });
+
+        res.status(StatusCodes.OK).json(canceledReservation);
+    } catch (error) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Server Error" });
+    }
+}
+
 
 module.exports = {
     createReservation,
     getMyActiveReservations,
     getMyExpiredReservations,
     getMyFinishedReservations,
-    getMyCanceledReservations
+    getMyCanceledReservations,
+    getReservationById,
+    cancelReservation
     
 }
