@@ -58,7 +58,7 @@ async function createReservation(req, res, next) {
         const qrCode = await qr.toDataURL(reservationId);
         const uploadDir = path.join(__dirname, '../uploads/qrcodes');
         const qrCodeImagePath = `${uploadDir}/${reservationId}.png`; // Example: /path/to/uploads/uuid.png
-        const qrCodeImageUrl = `${req.protocol}://${req.get('host')}/uploads/qrcodes/${reservationId}.png`;
+        const qrCodeImageUrl = `uploads/qrcodes/${reservationId}.png`;
 
         // Save the QR code image to a file
         await fs.promises.writeFile(qrCodeImagePath, qrCode.split(';base64,').pop(), { encoding: 'base64' });
@@ -95,17 +95,21 @@ async function createReservation(req, res, next) {
 
 
 
-
 async function getMyActiveReservations(req, res, next) {
     try {
         const userId = req.user.id;
         const currentDateTime = new Date();
 
-        // Fetch active reservations for the user
+        // Fetch active reservations for the user including parking information
         let activeReservations = await prisma.reservation.findMany({
             where: {
                 userId: userId,
                 status: "active",
+            },
+            include: {
+                parking: {
+                    include : {address:true}
+                }, // Include parking information
             },
         });
 
@@ -152,6 +156,7 @@ async function getMyExpiredReservations(req, res, next) {
                 userId: userId,
                 status: "active",
             },
+           
         });
 
         // Update status for expired active reservations
@@ -182,6 +187,11 @@ async function getMyExpiredReservations(req, res, next) {
                 userId: userId,
                 status: "expired",
             },
+            include: {
+                parking: {
+                    include : {address:true}
+                }, // Include parking information
+            },
         });
 
         // Combine newly expired reservations with already expired ones
@@ -203,6 +213,11 @@ async function getMyFinishedReservations(req, res, next) {
                 userId: userId,
                 status: "finished",
             },
+            include: {
+                parking: {
+                    include : {address:true}
+                }, // Include parking information
+            },
         });
 
         res.status(StatusCodes.OK).json(finishedReservations);
@@ -222,6 +237,11 @@ async function getMyCanceledReservations(req, res, next) {
                 userId: userId,
                 status: "canceled",
             },
+            include: {
+                parking: {
+                    include : {address:true}
+                }, // Include parking information
+            },
         });
 
         res.status(StatusCodes.OK).json(canceledReservations);
@@ -239,6 +259,11 @@ async function getReservationById(req, res, next) {
         const reservation = await prisma.reservation.findUnique({
             where: {
                 id: parseInt(reservationId, 10),
+            },
+            include: {
+                parking: {
+                    include : {address:true}
+                }, // Include parking information
             },
         });
 
