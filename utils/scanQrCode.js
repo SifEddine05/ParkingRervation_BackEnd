@@ -62,16 +62,35 @@ async function main() {
 
     if (qrCodeContent) {
       console.log('QR Code content:', qrCodeContent);
-      const reservationRandomId = qrCodeContent
-      const finishedReservation = await prisma.reservation.updateMany({
+      const reservationRandomId = qrCodeContent;
+
+      const reservation = await prisma.reservation.findFirst({
         where: {
             reservationRandomId: reservationRandomId,
         },
-        data: {
-            status: "finished",
-        },
-    })
-    console.log('reservation : ',finishedReservation);
+    });
+
+    if (reservation) {
+        // Check if the reservation status is not active
+        if (reservation.status !== 'active') {
+            console.error('Error: Reservation is not active');
+            // Log or handle the error accordingly
+        } else {
+            // Update the reservation status to "finished"
+            const finishedReservation = await prisma.reservation.updateMany({
+                where: {
+                    reservationRandomId: reservationRandomId,
+                },
+                data: {
+                    status: "finished",
+                },
+            });
+            console.log('Reservation status updated to "finished"');
+        }
+        } else {
+            console.error('Error: Reservation not found');
+            // Log or handle the error accordingly
+        }
     } else {
       console.log('No QR Code found in the image.');
     }
