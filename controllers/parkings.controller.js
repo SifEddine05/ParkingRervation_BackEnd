@@ -94,6 +94,9 @@ async function getMostPopularParkings(req, res, next) {
               where: {
                   id: entry.parkingId,
               },
+              include: {
+                address: true, // Include the address details
+            },
           });
           return { ...parking, reservationCount: entry.count };
       }));
@@ -129,7 +132,10 @@ async function getMostWantedParkings(req, res, next) {
               id: {
                   in: parkingIds
               }
-          }
+           },
+           include: {
+            address: true, // Include the address details
+          },
       });
 
       res.status(StatusCodes.OK).json(mostWantedParkings);
