@@ -13,8 +13,9 @@ async function main() {
   const parkings = [];
   for (let i = 0; i < 15; i++) {
     const address = addresses[i];
+    const randomNumber = Math.floor(Math.random() * (8 - 1 + 1)) + 1
     parkings.push({
-      photo: `https://example.com/photo${i + 1}.jpg`,
+      photo: `uploads/parkingsPhotos/parking${randomNumber}.png`,
       nom: `Parking ${i + 1}`,
       addressId: address.id,
       description: `Description for Parking ${i + 1}`,
