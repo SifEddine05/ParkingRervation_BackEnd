@@ -4,6 +4,10 @@ const { v4: uuidv4 } = require('uuid');
 const qr = require('qrcode'); // Import the qrcode library
 const fs = require('fs');
 const path = require('path');
+const schedule = require('node-schedule'); // Import the node-schedule library
+const { sendNotification } = require("../services/sendNotification");
+
+
 
 async function createReservation(req, res, next) {
     try {
@@ -86,6 +90,16 @@ async function createReservation(req, res, next) {
             }
         });
 
+        // Schedule a job to send a notification 15 minutes before the reservation starts
+        const notificationTime = new Date(dateAndTimeDebut);
+        notificationTime.setMinutes(notificationTime.getMinutes() - 1);
+
+        schedule.scheduleJob(notificationTime, async () => {
+            const message = `Your reservation with ID ${reservation.id} is starting in 15 minutes.`;
+            await sendNotification(userId, message,reservation.status);
+        });
+
+
         res.status(StatusCodes.CREATED).json(reservation);
     } catch (error) {
         res.status(500).json("Server Error");
@@ -93,6 +107,29 @@ async function createReservation(req, res, next) {
 }
 
 
+
+
+async function updateUserFCMToken(req, res, next) {
+    try {
+        const  userId  = req.user.id;
+        const { fcmToken } = req.body;
+
+        // Update the user's fcmToken
+        const updatedUser = await prisma.user.update({
+            where: {
+                id: parseInt(userId, 10),
+            },
+            data: {
+                fcmToken: fcmToken,
+            },
+        });
+
+        res.status(StatusCodes.OK).json(updatedUser);
+    } catch (error) {
+        console.error("Error updating user FCM token:", error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Failed to update user FCM token" });
+    }
+}
 
 
 async function getMyActiveReservations(req, res, next) {
@@ -326,6 +363,7 @@ module.exports = {
     getMyFinishedReservations,
     getMyCanceledReservations,
     getReservationById,
-    cancelReservation
+    cancelReservation,
+    updateUserFCMToken
     
 }
