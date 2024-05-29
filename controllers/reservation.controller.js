@@ -92,7 +92,7 @@ async function createReservation(req, res, next) {
 
         // Schedule a job to send a notification 15 minutes before the reservation starts
         const notificationTime = new Date(dateAndTimeDebut);
-        notificationTime.setMinutes(notificationTime.getMinutes() - 1);
+        notificationTime.setMinutes(notificationTime.getMinutes() - 15);
 
         schedule.scheduleJob(notificationTime, async () => {
             const message = `Your reservation with ID ${reservation.id} is starting in 15 minutes.`;
