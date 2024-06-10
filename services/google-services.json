@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "315019679051",
+    "firebase_url": "https://tdm-project-904da-default-rtdb.firebaseio.com",
+    "project_id": "tdm-project-904da",
+    "storage_bucket": "tdm-project-904da.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:315019679051:android:5ec8da74f474326a67c4ce",
+        "android_client_info": {
+          "package_name": "com.example.parkingreservation"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwFb76sMuctNi-Vp-9ft9C8YGcvYFR-6E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

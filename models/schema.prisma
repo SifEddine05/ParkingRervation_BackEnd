@@ -21,6 +21,7 @@ model User {
   password      String
   phone         String
   address       String
+  fcmToken      String        @default("") // Adding fcmToken field with default value ""
   reservations  Reservation[]
 
 }

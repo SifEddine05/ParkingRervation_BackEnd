@@ -21,6 +21,9 @@ app.use(
     extended: true,
   })
 );
+
+
+
 app.use('/uploads/qrcodes', express.static(path.join(__dirname, 'uploads/qrcodes')));
 app.use('/uploads/parkingsPhotos', express.static(path.join(__dirname, 'uploads/parkingsPhotos')));
 
