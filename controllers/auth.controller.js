@@ -96,6 +96,50 @@ const register = async (req, res, next) => {
   }
 };
 
+
+const loginWithGoogle = async (req, res, next) => {
+  try {
+    const userCred = req.body;
+    let user = await prisma.user.findUnique({
+      where: { email: userCred.email},
+    });
+
+
+    if (user == null) {
+      user = await prisma.user.create({
+        data: {
+          fullName: userCred.fullName,
+          phone: "",
+          email: userCred.email,
+          address : "",
+          password: "",
+          googleId : userCred.googleId,
+        },
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        userID: user.id,
+        email: user.email,
+      },
+      JWT_SECRET,
+      {
+        expiresIn: JWT_EXP,
+      }
+    );
+    res.status(StatusCodes.OK).json({
+      user: {
+          email: user.email,
+          id: user.id,
+        },
+      token: token,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 function getCurrentUser(req, res, next) {
   try {
       // Check if user object is attached to request
@@ -119,5 +163,6 @@ module.exports = {
   register,
   hashPassword,
   comparePassword,
-  getCurrentUser
+  getCurrentUser,
+  loginWithGoogle
 };
