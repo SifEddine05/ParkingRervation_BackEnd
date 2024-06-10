@@ -22,6 +22,7 @@ model User {
   phone         String
   address       String
   fcmToken      String        @default("") // Adding fcmToken field with default value ""
+  googleId      String        @default("")
   reservations  Reservation[]
 
 }
