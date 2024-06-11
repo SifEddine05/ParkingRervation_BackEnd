@@ -87,6 +87,13 @@ async function createReservation(req, res, next) {
                 position: generateRandomPosition(),
                 qRcode: qrCodeImageUrl,
                 status: "active"
+            },
+            include: {
+                parking: {
+                    include: {
+                        address: true // Include the address of the parking
+                    }
+                }
             }
         });
 
@@ -95,7 +102,7 @@ async function createReservation(req, res, next) {
         notificationTime.setMinutes(notificationTime.getMinutes() - 15);
 
         schedule.scheduleJob(notificationTime, async () => {
-            const message = `Your reservation with ID ${reservation.id} is starting in 15 minutes.`;
+            const message = `Your reservation with is due in 15 minutes.`;
             await sendNotification(userId, message,reservation.status);
         });
 
@@ -113,7 +120,6 @@ async function updateUserFCMToken(req, res, next) {
     try {
         const  userId  = req.user.id;
         const { fcmToken } = req.body;
-
         // Update the user's fcmToken
         const updatedUser = await prisma.user.update({
             where: {

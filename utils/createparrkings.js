@@ -11,18 +11,17 @@ async function main() {
 
   // Create 15 parking records
   const parkings = [];
-  for (let i = 0; i < 15; i++) {
-    const address = addresses[i];
+  //for (let i = 0; i < 15; i++) {
     const randomNumber = Math.floor(Math.random() * (8 - 1 + 1)) + 1
     parkings.push({
       photo: `uploads/parkingsPhotos/parking${randomNumber}.png`,
-      nom: `Parking ${i + 1}`,
-      addressId: address.id,
-      description: `Description for Parking ${i + 1}`,
+      nom: `Parking ${500000}`,
+      addressId: 566,
+      description: `Description for Parking ${1}`,
       nbrTotalPlaces: Math.floor(Math.random() * 100 + 1), // Random number of places between 1 and 100
       pricePerHour: parseFloat((Math.random() * 10 + 1).toFixed(2)), // Random price per hour between 1 and 10
     });
-  }
+  //}
 
   // Insert parkings into the database
   const createdParkings = await prisma.parking.createMany({
