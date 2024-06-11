@@ -87,6 +87,13 @@ async function createReservation(req, res, next) {
                 position: generateRandomPosition(),
                 qRcode: qrCodeImageUrl,
                 status: "active"
+            },
+            include: {
+                parking: {
+                    include: {
+                        address: true // Include the address of the parking
+                    }
+                }
             }
         });
 
